@@ -38,3 +38,8 @@ func GetCache(key string) (string, error) {
 func DeleteCache(key string) {
 	RedisClient.Del(ctx, key)
 }
+
+func UpdateCache(key string, value string, expiration time.Duration) {
+	RedisClient.Del(ctx, key)
+	RedisClient.Set(ctx, key, value, expiration)
+}

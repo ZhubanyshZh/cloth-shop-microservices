@@ -26,7 +26,7 @@ func RegisterRoutes(handler *handlers.ProductHandler) *mux.Router {
 
 	r.Handle(
 		"/products/{id:[0-9]+}",
-		http.HandlerFunc(handler.DeleteProduct)).Methods("DELETE")
+		http.HandlerFunc(handler.DeleteProduct)).Methods(http.MethodDelete)
 
 	r.Handle(
 		"/products",

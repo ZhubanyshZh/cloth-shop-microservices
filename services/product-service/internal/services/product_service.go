@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/jinzhu/copier"
+	"strconv"
 	"time"
 
 	"github.com/ZhubanyshZh/go-project-service/internal/cache"
@@ -44,17 +45,31 @@ func (s *ProductService) GetProduct(id uint) (*models.Product, error) {
 	return product, nil
 }
 
-func (s *ProductService) CreateProduct(productEdit *models.ProductEdit) error {
+func (s *ProductService) CreateProduct(createProduct *models.ProductEdit) error {
 	product := &models.Product{}
-	copier.Copy(product, productEdit)
-	fmt.Println(product, productEdit)
-	return s.Repo.Create(product)
+	copier.Copy(product, createProduct)
+	fmt.Println(product, createProduct)
+	createErr := s.Repo.Create(product)
+	if createErr != nil {
+		return createErr
+	}
+	productJSON, _ := json.Marshal(product)
+	cacheKey := fmt.Sprintf("product:%d", product.ID)
+	cache.SetCache(cacheKey, string(productJSON), 10*time.Minute)
+	return nil
 }
 
 func (s *ProductService) UpdateProduct(productEdit *models.ProductEdit) error {
 	product := &models.Product{}
 	copier.Copy(product, productEdit)
-	return s.Repo.Update(product)
+	updErr := s.Repo.Update(product)
+	if updErr != nil {
+		return updErr
+	}
+	productJSON, _ := json.Marshal(product)
+	cacheKey := fmt.Sprintf("product:%d", product.ID)
+	cache.UpdateCache(cacheKey, string(productJSON), 10*time.Minute)
+	return nil
 }
 
 func (s *ProductService) DeleteProduct(id uint) error {
@@ -62,7 +77,12 @@ func (s *ProductService) DeleteProduct(id uint) error {
 	if err != nil {
 		return err
 	}
-	return s.Repo.Delete(id)
+	delErr := s.Repo.Delete(id)
+	if delErr != nil {
+		return delErr
+	}
+	cache.DeleteCache(strconv.Itoa(int(id)))
+	return nil
 }
 
 func (s *ProductService) FindProductById(id uint) (*models.Product, error) {

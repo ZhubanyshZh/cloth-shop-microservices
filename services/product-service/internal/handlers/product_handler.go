@@ -2,17 +2,25 @@ package handlers
 
 import (
 	"encoding/json"
-	"log"
-	"net/http"
-	"strconv"
-
 	"github.com/ZhubanyshZh/go-project-service/internal/models"
 	"github.com/ZhubanyshZh/go-project-service/internal/services"
 	"github.com/gorilla/mux"
+	"log"
+	"net/http"
+	"strconv"
 )
 
 type ProductHandler struct {
 	Service *services.ProductService
+}
+
+func getIdFromRequest(r *http.Request, w http.ResponseWriter) (int, error) {
+	id, err := strconv.Atoi(mux.Vars(r)["id"])
+	if err != nil {
+		handleError(w, err, "❌ Invalid product ID", http.StatusBadRequest)
+		return 0, err
+	}
+	return id, nil
 }
 
 func handleError(w http.ResponseWriter, err error, message string, statusCode int) {
@@ -29,9 +37,8 @@ func decodeJSONRequest[T any](w http.ResponseWriter, r *http.Request, dst *T) bo
 }
 
 func (h *ProductHandler) GetProduct(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.Atoi(mux.Vars(r)["id"])
+	id, err := getIdFromRequest(r, w)
 	if err != nil {
-		handleError(w, err, "❌ Invalid product ID", http.StatusBadRequest)
 		return
 	}
 
@@ -78,9 +85,8 @@ func (h *ProductHandler) UpdateProduct(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *ProductHandler) DeleteProduct(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.Atoi(mux.Vars(r)["id"])
-	if err != nil {
-		handleError(w, err, "❌ Invalid product ID", http.StatusBadRequest)
+	id, err := getIdFromRequest(r, w)
+	if err == nil {
 		return
 	}
 
