@@ -45,7 +45,7 @@ func (s *ProductService) GetProduct(id uint) (*models.Product, error) {
 	return product, nil
 }
 
-func (s *ProductService) CreateProduct(createProduct *models.ProductEdit) error {
+func (s *ProductService) CreateProduct(createProduct *models.ProductCreate) error {
 	product := &models.Product{}
 	copier.Copy(product, createProduct)
 	fmt.Println(product, createProduct)
@@ -59,9 +59,12 @@ func (s *ProductService) CreateProduct(createProduct *models.ProductEdit) error 
 	return nil
 }
 
-func (s *ProductService) UpdateProduct(productEdit *models.ProductEdit) error {
-	product := &models.Product{}
-	copier.Copy(product, productEdit)
+func (s *ProductService) UpdateProduct(productUpdate *models.ProductUpdate) error {
+	product, err := s.FindProductById(productUpdate.ID)
+	if err != nil {
+		return err
+	}
+	copier.Copy(product, productUpdate)
 	updErr := s.Repo.Update(product)
 	if updErr != nil {
 		return updErr

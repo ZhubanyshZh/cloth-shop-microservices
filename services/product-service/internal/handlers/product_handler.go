@@ -53,7 +53,7 @@ func (h *ProductHandler) GetProduct(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *ProductHandler) CreateProduct(w http.ResponseWriter, r *http.Request) {
-	var product models.ProductEdit
+	var product models.ProductCreate
 	if !decodeJSONRequest(w, r, &product) {
 		return
 	}
@@ -69,7 +69,7 @@ func (h *ProductHandler) CreateProduct(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *ProductHandler) UpdateProduct(w http.ResponseWriter, r *http.Request) {
-	var product models.ProductEdit
+	var product models.ProductUpdate
 	if !decodeJSONRequest(w, r, &product) {
 		return
 	}

@@ -19,7 +19,7 @@ func RegisterRoutes(handler *handlers.ProductHandler) *mux.Router {
 	r.Handle(
 		"/products",
 		middlewares.ValidateProductMiddleware(&models.ProductCreate{})(
-			http.HandlerFunc(handler.UpdateProduct),
+			http.HandlerFunc(handler.CreateProduct),
 		)).Methods(http.MethodPost)
 
 	r.Handle(
