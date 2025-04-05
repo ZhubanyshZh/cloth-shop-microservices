@@ -32,7 +32,6 @@ func ValidateProductMiddleware[T any](target *T) func(http.Handler) http.Handler
 				return
 			}
 
-			// Восстанавливаем тело запроса для следующего обработчика
 			r.Body = io.NopCloser(bytes.NewReader(body))
 
 			next.ServeHTTP(w, r)
