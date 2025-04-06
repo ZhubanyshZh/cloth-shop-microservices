@@ -15,7 +15,7 @@ type ProductHandler struct {
 func (h *ProductHandler) GetProduct(w http.ResponseWriter, r *http.Request) {
 	id, err := utils.GetIDFromRequest(r)
 	if err != nil {
-		utils.HandleError(w, err, "❌ Invalid product ID", http.StatusBadRequest)
+		utils.HandleError(w, err, "❌ Invalid product_cache ID", http.StatusBadRequest)
 		return
 	}
 
@@ -45,7 +45,7 @@ func (h *ProductHandler) CreateProduct(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.Service.CreateProduct(&product); err != nil {
-		utils.HandleError(w, err, "❌ Error creating product", http.StatusInternalServerError)
+		utils.HandleError(w, err, "❌ Error creating product_cache", http.StatusInternalServerError)
 		return
 	}
 
@@ -59,7 +59,7 @@ func (h *ProductHandler) UpdateProduct(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.Service.UpdateProduct(&product); err != nil {
-		utils.HandleError(w, err, "❌ Error updating product", http.StatusBadRequest)
+		utils.HandleError(w, err, "❌ Error updating product_cache", http.StatusBadRequest)
 		return
 	}
 
@@ -69,7 +69,7 @@ func (h *ProductHandler) UpdateProduct(w http.ResponseWriter, r *http.Request) {
 func (h *ProductHandler) DeleteProduct(w http.ResponseWriter, r *http.Request) {
 	id, err := utils.GetIDFromRequest(r)
 	if err != nil {
-		utils.HandleError(w, err, "❌ Invalid product ID", http.StatusBadRequest)
+		utils.HandleError(w, err, "❌ Invalid product_cache ID", http.StatusBadRequest)
 		return
 	}
 
