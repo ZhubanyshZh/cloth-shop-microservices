@@ -7,35 +7,34 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/ZhubanyshZh/go-project-service/internal/models"
 	"github.com/ZhubanyshZh/go-project-service/internal/utils"
 )
 
-func ValidateProductMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var product models.ProductEdit
+func ValidateProductMiddleware[T any](target *T) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			body, err := io.ReadAll(r.Body)
+			if err != nil {
+				http.Error(w, "❌ Ошибка чтения тела запроса", http.StatusBadRequest)
+				log.Println("❌ Ошибка чтения тела запроса:", err)
+				return
+			}
 
-		body, err := io.ReadAll(r.Body)
-		if err != nil {
-			http.Error(w, "❌ Ошибка чтения тела запроса", http.StatusBadRequest)
-			log.Fatal("❌ Ошибка чтения тела запроса", err.Error())
-			return
-		}
+			if err := json.Unmarshal(body, target); err != nil {
+				http.Error(w, "❌ Неверный формат JSON", http.StatusBadRequest)
+				log.Println("❌ Неверный формат JSON:", err)
+				return
+			}
 
-		if err := json.Unmarshal(body, &product); err != nil {
-			http.Error(w, "❌ Неверный формат JSON", http.StatusBadRequest)
-			log.Fatal("❌ Неверный формат JSON: ", err.Error())
-			return
-		}
+			if err := utils.ValidateStruct(target); err != nil {
+				http.Error(w, "❌ Ошибка валидации: "+err.Error(), http.StatusBadRequest)
+				log.Println("❌ Ошибка валидации:", err)
+				return
+			}
 
-		if err := utils.ValidateStruct(&product); err != nil {
-			http.Error(w, "❌ Ошибка валидации: "+err.Error(), http.StatusBadRequest)
-			log.Fatal("❌ Ошибка валидации:", err.Error())
-			return
-		}
+			r.Body = io.NopCloser(bytes.NewReader(body))
 
-		r.Body = io.NopCloser(bytes.NewReader(body))
-
-		next.ServeHTTP(w, r)
-	})
+			next.ServeHTTP(w, r)
+		})
+	}
 }

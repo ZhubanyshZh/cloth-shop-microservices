@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/ZhubanyshZh/go-project-service/internal/cache/product_cache"
 	"log"
 	"net/http"
 	"os"
@@ -21,8 +22,9 @@ func main() {
 	db.InitDB()
 	cache.InitRedis()
 
+	productCache := product_cache.NewProductCache()
 	repo := repositories.NewProductRepository(db.DB)
-	service := services.NewProductService(repo)
+	service := services.NewProductService(repo, productCache)
 	handler := handlers.ProductHandler{Service: service}
 
 	r := routes.RegisterRoutes(&handler)

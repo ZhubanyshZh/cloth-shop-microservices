@@ -1,6 +1,6 @@
 package models
 
-type ProductEdit struct {
+type ProductCreate struct {
 	ID          uint    `gorm:"primaryKey" json:"id"`
 	Name        string  `validate:"required"`
 	Description string  `validate:"required"`

@@ -1,23 +1,22 @@
 package services
 
 import (
-	"encoding/json"
 	"fmt"
+	"github.com/ZhubanyshZh/go-project-service/internal/cache/product_cache"
 	"github.com/jinzhu/copier"
-	"strconv"
-	"time"
+	"log"
 
-	"github.com/ZhubanyshZh/go-project-service/internal/cache"
 	"github.com/ZhubanyshZh/go-project-service/internal/models"
 	"github.com/ZhubanyshZh/go-project-service/internal/repositories"
 )
 
 type ProductService struct {
-	Repo *repositories.ProductRepository
+	Repo  *repositories.ProductRepository
+	Cache *product_cache.ProductCache
 }
 
-func NewProductService(repo *repositories.ProductRepository) *ProductService {
-	return &ProductService{Repo: repo}
+func NewProductService(repo *repositories.ProductRepository, cache *product_cache.ProductCache) *ProductService {
+	return &ProductService{Repo: repo, Cache: cache}
 }
 
 func (s *ProductService) GetProducts() ([]models.Product, error) {
@@ -25,70 +24,67 @@ func (s *ProductService) GetProducts() ([]models.Product, error) {
 }
 
 func (s *ProductService) GetProduct(id uint) (*models.Product, error) {
-	cacheKey := fmt.Sprintf("product:%d", id)
+	cacheKey := s.Cache.BuildCacheKey(id)
 
-	if cached, err := cache.GetCache(cacheKey); err == nil {
-		var product models.Product
-		json.Unmarshal([]byte(cached), &product)
-		fmt.Println("🔄 Cache Hit!")
-		return &product, nil
+	if product, found := s.Cache.GetFromCache(cacheKey); found {
+		log.Println("🟢 Cache hit for product_cache:", id)
+		return product, nil
 	}
 
-	product, err := s.FindProductById(id)
+	productFromDB, err := s.FindProductById(id)
 	if err != nil {
 		return nil, err
 	}
 
-	productJSON, _ := json.Marshal(product)
-	cache.SetCache(cacheKey, string(productJSON), 10*time.Minute)
-
-	return product, nil
+	s.Cache.SetToCache(cacheKey, productFromDB)
+	return productFromDB, nil
 }
 
-func (s *ProductService) CreateProduct(createProduct *models.ProductEdit) error {
+func (s *ProductService) CreateProduct(productCreate *models.ProductCreate) error {
 	product := &models.Product{}
-	copier.Copy(product, createProduct)
-	fmt.Println(product, createProduct)
-	createErr := s.Repo.Create(product)
-	if createErr != nil {
-		return createErr
+	if err := copier.Copy(product, productCreate); err != nil {
+		return fmt.Errorf("failed to copy product_cache data: %w", err)
 	}
-	productJSON, _ := json.Marshal(product)
-	cacheKey := fmt.Sprintf("product:%d", product.ID)
-	cache.SetCache(cacheKey, string(productJSON), 10*time.Minute)
+
+	if err := s.Repo.Create(product); err != nil {
+		return err
+	}
+
+	s.Cache.SetToCache(s.Cache.BuildCacheKey(product.ID), product)
 	return nil
 }
 
-func (s *ProductService) UpdateProduct(productEdit *models.ProductEdit) error {
-	product := &models.Product{}
-	copier.Copy(product, productEdit)
-	updErr := s.Repo.Update(product)
-	if updErr != nil {
-		return updErr
+func (s *ProductService) UpdateProduct(productUpdate *models.ProductUpdate) error {
+	existingProduct, err := s.FindProductById(productUpdate.ID)
+	if err != nil {
+		return err
 	}
-	productJSON, _ := json.Marshal(product)
-	cacheKey := fmt.Sprintf("product:%d", product.ID)
-	cache.UpdateCache(cacheKey, string(productJSON), 10*time.Minute)
+
+	if err := copier.Copy(existingProduct, productUpdate); err != nil {
+		return fmt.Errorf("failed to copy updated data: %w", err)
+	}
+
+	if err := s.Repo.Update(existingProduct); err != nil {
+		return err
+	}
+
+	s.Cache.SetToCache(s.Cache.BuildCacheKey(existingProduct.ID), existingProduct)
 	return nil
 }
 
 func (s *ProductService) DeleteProduct(id uint) error {
-	_, err := s.FindProductById(id)
-	if err != nil {
+	if _, err := s.FindProductById(id); err != nil {
 		return err
 	}
-	delErr := s.Repo.Delete(id)
-	if delErr != nil {
-		return delErr
+
+	if err := s.Repo.Delete(id); err != nil {
+		return err
 	}
-	cache.DeleteCache(strconv.Itoa(int(id)))
+
+	s.Cache.DeleteFromCache(s.Cache.BuildCacheKey(id))
 	return nil
 }
 
 func (s *ProductService) FindProductById(id uint) (*models.Product, error) {
-	product, err := s.Repo.GetByID(id)
-	if err != nil {
-		return nil, err
-	}
-	return product, nil
+	return s.Repo.GetByID(id)
 }
