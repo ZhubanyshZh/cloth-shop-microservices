@@ -30,4 +30,5 @@ func InitDB() {
 	fmt.Println("✅ Connected to Database")
 
 	DB.AutoMigrate(&models.Product{})
+	DB.AutoMigrate(&models.Image{})
 }

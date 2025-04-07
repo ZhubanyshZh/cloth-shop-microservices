@@ -11,9 +11,8 @@ import (
 	"github.com/gorilla/mux"
 )
 
-var baseUrl = "/api/" + os.Getenv("API_VERSION") + "/products"
-
 func RegisterRoutes(handler *handlers.ProductHandler) *mux.Router {
+	var baseUrl = "/api/" + os.Getenv("API_VERSION") + "/products"
 	r := mux.NewRouter()
 	r.Handle(
 		baseUrl,

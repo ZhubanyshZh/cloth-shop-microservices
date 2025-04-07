@@ -3,11 +3,10 @@ package services
 import (
 	"fmt"
 	"github.com/ZhubanyshZh/go-project-service/internal/cache/product_cache"
-	"github.com/jinzhu/copier"
-	"log"
-
 	"github.com/ZhubanyshZh/go-project-service/internal/models"
 	"github.com/ZhubanyshZh/go-project-service/internal/repositories"
+	"github.com/jinzhu/copier"
+	"log"
 )
 
 type ProductService struct {
