@@ -5,4 +5,5 @@ type ProductCreate struct {
 	Name        string  `validate:"required"`
 	Description string  `validate:"required"`
 	Price       float64 `validate:"required,gt=0"`
+	ImageIds    []Image `gorm:"foreignKey:ProductID" json:"images"`
 }
