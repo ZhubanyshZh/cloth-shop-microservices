@@ -6,7 +6,7 @@ import (
 
 type Image struct {
 	ID        uint      `gorm:"primaryKey" json:"id"`
-	ProductID uint      `gorm:"not null" json:"product_id"`
+	ProductID uint      `json:"product_id"`
 	URL       string    `gorm:"type:text;not null" json:"url"`
 	CreatedAt time.Time `json:"created_at"`
 }

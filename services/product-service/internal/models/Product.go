@@ -7,6 +7,7 @@ type Product struct {
 	Name        string    `gorm:"type:varchar(255);not null" json:"product_name"`
 	Description string    `gorm:"type:text" json:"description"`
 	Price       float64   `gorm:"not null" json:"price"`
-	ImageIds    []Image   `gorm:"foreignKey:ProductID" json:"image_ids"`
 	CreatedAt   time.Time `gorm:"autoCreateTime" json:"created_at"`
+
+	Images []Image `gorm:"foreignKey:ProductID;constraint:OnDelete:CASCADE;" json:"images"`
 }

@@ -2,9 +2,9 @@ package handlers
 
 import (
 	"encoding/json"
+	"github.com/ZhubanyshZh/go-project-service/internal/dto"
 	"net/http"
 
-	"github.com/ZhubanyshZh/go-project-service/internal/models"
 	"github.com/ZhubanyshZh/go-project-service/internal/services"
 	"github.com/ZhubanyshZh/go-project-service/internal/utils"
 )
@@ -46,7 +46,7 @@ func (h *ProductHandler) CreateProduct(w http.ResponseWriter, r *http.Request) {
 	}
 
 	productJson := r.FormValue("product")
-	var product models.ProductCreate
+	var product dto.ProductCreate
 	if err := json.Unmarshal([]byte(productJson), &product); err != nil {
 		utils.HandleError(w, err, "❌ Invalid product JSON", http.StatusBadRequest)
 		return
@@ -54,7 +54,6 @@ func (h *ProductHandler) CreateProduct(w http.ResponseWriter, r *http.Request) {
 
 	form := r.MultipartForm
 	files := form.File["images"]
-
 	product.Images = files
 
 	if err := h.Service.CreateProduct(&product); err != nil {
@@ -66,7 +65,7 @@ func (h *ProductHandler) CreateProduct(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *ProductHandler) UpdateProduct(w http.ResponseWriter, r *http.Request) {
-	var product models.ProductUpdate
+	var product dto.ProductUpdate
 	if !utils.DecodeJSONRequest(w, r, &product) {
 		return
 	}

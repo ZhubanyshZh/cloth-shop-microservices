@@ -1,4 +1,4 @@
-package models
+package dto
 
 type ProductUpdate struct {
 	ID          uint     `json:"id" validate:"required"`

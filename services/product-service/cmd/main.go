@@ -24,7 +24,8 @@ func main() {
 	minio.InitMinio()
 	cache.InitRedis()
 
-	imageService := services.NewImageService(db.DB)
+	imageRepository := *repositories.NewImageRepository(db.DB)
+	imageService := services.NewImageService(imageRepository)
 	productCache := product_cache.NewProductCache()
 	repo := repositories.NewProductRepository(db.DB)
 	service := services.NewProductService(repo, productCache, imageService)

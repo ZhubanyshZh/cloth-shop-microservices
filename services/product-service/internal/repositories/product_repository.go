@@ -19,13 +19,13 @@ func (repo *ProductRepository) Create(product *models.Product) error {
 
 func (repo *ProductRepository) GetAll() ([]models.Product, error) {
 	var products []models.Product
-	err := repo.DB.Find(&products).Error
+	err := repo.DB.Preload("Images").Find(&products).Error
 	return products, err
 }
 
 func (repo *ProductRepository) GetByID(id uint) (*models.Product, error) {
 	var product models.Product
-	err := repo.DB.First(&product, id).Error
+	err := repo.DB.Preload("Images").First(&product, id).Error
 	return &product, err
 }
 
