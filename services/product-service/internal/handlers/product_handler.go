@@ -1,9 +1,10 @@
 package handlers
 
 import (
+	"encoding/json"
+	"github.com/ZhubanyshZh/go-project-service/internal/dto"
 	"net/http"
 
-	"github.com/ZhubanyshZh/go-project-service/internal/models"
 	"github.com/ZhubanyshZh/go-project-service/internal/services"
 	"github.com/ZhubanyshZh/go-project-service/internal/utils"
 )
@@ -39,13 +40,24 @@ func (h *ProductHandler) GetProducts(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *ProductHandler) CreateProduct(w http.ResponseWriter, r *http.Request) {
-	var product models.ProductCreate
-	if !utils.DecodeJSONRequest(w, r, &product) {
+	if err := r.ParseMultipartForm(10 << 20); err != nil {
+		utils.HandleError(w, err, "❌ Failed to parse multipart form", http.StatusBadRequest)
 		return
 	}
 
+	productJson := r.FormValue("product")
+	var product dto.ProductCreate
+	if err := json.Unmarshal([]byte(productJson), &product); err != nil {
+		utils.HandleError(w, err, "❌ Invalid product JSON", http.StatusBadRequest)
+		return
+	}
+
+	form := r.MultipartForm
+	files := form.File["images"]
+	product.Images = files
+
 	if err := h.Service.CreateProduct(&product); err != nil {
-		utils.HandleError(w, err, "❌ Error creating product_cache", http.StatusInternalServerError)
+		utils.HandleError(w, err, "❌ Error creating product", http.StatusInternalServerError)
 		return
 	}
 
@@ -53,7 +65,7 @@ func (h *ProductHandler) CreateProduct(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *ProductHandler) UpdateProduct(w http.ResponseWriter, r *http.Request) {
-	var product models.ProductUpdate
+	var product dto.ProductUpdate
 	if !utils.DecodeJSONRequest(w, r, &product) {
 		return
 	}

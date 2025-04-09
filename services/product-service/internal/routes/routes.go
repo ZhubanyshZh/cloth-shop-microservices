@@ -1,7 +1,7 @@
 package routes
 
 import (
-	"github.com/ZhubanyshZh/go-project-service/internal/models"
+	"github.com/ZhubanyshZh/go-project-service/internal/dto"
 	"net/http"
 	"os"
 
@@ -20,9 +20,8 @@ func RegisterRoutes(handler *handlers.ProductHandler) *mux.Router {
 
 	r.Handle(
 		baseUrl,
-		middlewares.ValidateProductMiddleware(&models.ProductCreate{})(
-			http.HandlerFunc(handler.CreateProduct),
-		)).Methods(http.MethodPost)
+		http.HandlerFunc(handler.CreateProduct),
+	).Methods(http.MethodPost)
 
 	r.Handle(
 		baseUrl+"/{id:[0-9]+}",
@@ -34,7 +33,7 @@ func RegisterRoutes(handler *handlers.ProductHandler) *mux.Router {
 
 	r.Handle(
 		baseUrl,
-		middlewares.ValidateProductMiddleware(&models.ProductUpdate{})(
+		middlewares.ValidateProductMiddleware(&dto.ProductUpdate{})(
 			http.HandlerFunc(handler.UpdateProduct),
 		)).Methods(http.MethodPut)
 	return r
