@@ -1,9 +1,10 @@
 package models
 
+import "mime/multipart"
+
 type ProductCreate struct {
-	ID          uint    `gorm:"primaryKey" json:"id"`
-	Name        string  `validate:"required"`
-	Description string  `validate:"required"`
-	Price       float64 `validate:"required,gt=0"`
-	ImageIds    []Image `gorm:"foreignKey:ProductID" json:"images"`
+	Name        string                  `form:"product_name" binding:"required"`
+	Description string                  `form:"description" binding:"required"`
+	Price       float64                 `form:"price" binding:"required,gt=0"`
+	Images      []*multipart.FileHeader `form:"images" binding:"required"`
 }

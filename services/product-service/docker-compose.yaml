@@ -21,5 +21,21 @@ services:
     ports:
       - "6379:6379"
 
+  minio:
+    image: minio/minio:latest
+    container_name: minio
+    environment:
+      MINIO_ROOT_USER: zhubanysh
+      MINIO_ROOT_PASSWORD: zhubanysh
+      MINIO_ENDPOINT: http://minio:9000
+      MINIO_BUCKET: product_recourses
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - ~/minio/data:/data
+    command: server --console-address :9001 /data
+
 volumes:
   db_data:
+  minio_data:

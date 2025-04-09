@@ -5,17 +5,21 @@ import (
 	"github.com/ZhubanyshZh/go-project-service/internal/cache/product_cache"
 	"github.com/ZhubanyshZh/go-project-service/internal/models"
 	"github.com/ZhubanyshZh/go-project-service/internal/repositories"
+	"github.com/ZhubanyshZh/go-project-service/internal/repositories/minio"
 	"github.com/jinzhu/copier"
 	"log"
 )
 
 type ProductService struct {
-	Repo  *repositories.ProductRepository
-	Cache *product_cache.ProductCache
+	Repo         *repositories.ProductRepository
+	Cache        *product_cache.ProductCache
+	ImageService *ImageService
 }
 
-func NewProductService(repo *repositories.ProductRepository, cache *product_cache.ProductCache) *ProductService {
-	return &ProductService{Repo: repo, Cache: cache}
+func NewProductService(repo *repositories.ProductRepository,
+	cache *product_cache.ProductCache,
+	imageService *ImageService) *ProductService {
+	return &ProductService{Repo: repo, Cache: cache, ImageService: imageService}
 }
 
 func (s *ProductService) GetProducts() ([]models.Product, error) {
@@ -42,11 +46,20 @@ func (s *ProductService) GetProduct(id uint) (*models.Product, error) {
 func (s *ProductService) CreateProduct(productCreate *models.ProductCreate) error {
 	product := &models.Product{}
 	if err := copier.Copy(product, productCreate); err != nil {
-		return fmt.Errorf("failed to copy product_cache data: %w", err)
+		return fmt.Errorf("failed to copy product data: %w", err)
+	}
+
+	imageUrls, err := minio.UploadFile(productCreate)
+	if err != nil {
+		return fmt.Errorf("failed to upload product images: %w", err)
 	}
 
 	if err := s.Repo.Create(product); err != nil {
 		return err
+	}
+
+	if err := s.ImageService.SaveImages(imageUrls, product.ID); err != nil {
+		return fmt.Errorf("failed to save product images: %w", err)
 	}
 
 	s.Cache.SetToCache(s.Cache.BuildCacheKey(product.ID), product)
