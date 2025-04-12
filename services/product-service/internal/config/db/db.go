@@ -1,10 +1,14 @@
 package db
 
 import (
+	"database/sql"
 	"fmt"
-	"github.com/ZhubanyshZh/go-project-service/internal/models"
 	"log"
 	"os"
+
+	"github.com/golang-migrate/migrate/v4"
+	migratepg "github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -21,13 +25,30 @@ func InitDB() {
 		os.Getenv("DB_PORT"),
 	)
 
-	var err error
-	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	sqlDB, err := sql.Open("postgres", dsn)
 	if err != nil {
-		log.Fatal("Failed to connect to database:", err)
+		log.Fatal(err)
 	}
 
-	fmt.Println("✅ Connected to Database")
+	driver, err := migratepg.WithInstance(sqlDB, &migratepg.Config{})
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	DB.AutoMigrate(&models.Product{}, &models.Image{})
+	m, err := migrate.NewWithDatabaseInstance("file://internal/config/db/migrations", "postgres", driver)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if err := m.Up(); err != nil && err.Error() != "no change" {
+		log.Fatal(err)
+	}
+
+	gormDB, err := gorm.Open(postgres.New(postgres.Config{
+		Conn: sqlDB,
+	}), &gorm.Config{})
+	if err != nil {
+		log.Fatal(err)
+	}
+	DB = gormDB
+	log.Println("Connected to postgres database")
 }
