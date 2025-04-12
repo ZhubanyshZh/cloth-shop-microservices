@@ -1,40 +1,34 @@
 package routes
 
 import (
-	"github.com/ZhubanyshZh/go-project-service/internal/dto"
+	"fmt"
+	"github.com/ZhubanyshZh/go-project-service/internal/middlewares"
 	"net/http"
 	"os"
 
 	"github.com/ZhubanyshZh/go-project-service/internal/handlers"
-	"github.com/ZhubanyshZh/go-project-service/internal/middlewares"
-
 	"github.com/gorilla/mux"
 )
 
 func RegisterRoutes(handler *handlers.ProductHandler) *mux.Router {
-	var baseUrl = "/api/" + os.Getenv("API_VERSION") + "/products"
+	apiVersion := os.Getenv("API_VERSION")
+	baseURL := fmt.Sprintf("/api/%s/products", apiVersion)
+
 	r := mux.NewRouter()
-	r.Handle(
-		baseUrl,
-		http.HandlerFunc(handler.GetProducts)).Methods(http.MethodGet)
+	productRouter := r.PathPrefix(baseURL).Subrouter()
 
-	r.Handle(
-		baseUrl,
-		http.HandlerFunc(handler.CreateProduct),
-	).Methods(http.MethodPost)
+	productRouter.HandleFunc("", handler.GetProducts).Methods(http.MethodGet)
+	productRouter.HandleFunc("/{id:[0-9]+}", handler.GetProduct).Methods(http.MethodGet)
 
-	r.Handle(
-		baseUrl+"/{id:[0-9]+}",
-		http.HandlerFunc(handler.GetProduct)).Methods(http.MethodGet)
+	productRouter.HandleFunc("/{id:[0-9]+}", handler.DeleteProduct).Methods(http.MethodDelete)
 
-	r.Handle(
-		baseUrl+"/{id:[0-9]+}",
-		http.HandlerFunc(handler.DeleteProduct)).Methods(http.MethodDelete)
+	createSub := productRouter.PathPrefix("").Subrouter()
+	createSub.Use(middlewares.ProductCreateMiddleware)
+	createSub.HandleFunc("", handler.CreateProduct).Methods(http.MethodPost)
 
-	r.Handle(
-		baseUrl,
-		middlewares.ValidateProductMiddleware(&dto.ProductUpdate{})(
-			http.HandlerFunc(handler.UpdateProduct),
-		)).Methods(http.MethodPut)
+	updateSub := productRouter.PathPrefix("").Subrouter()
+	updateSub.Use(middlewares.ProductUpdateMiddleware)
+	updateSub.HandleFunc("", handler.UpdateProduct).Methods(http.MethodPut)
+
 	return r
 }
