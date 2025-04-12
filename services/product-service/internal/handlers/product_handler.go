@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"encoding/json"
 	"github.com/ZhubanyshZh/go-project-service/internal/dto"
 	"net/http"
 
@@ -40,18 +39,11 @@ func (h *ProductHandler) GetProducts(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *ProductHandler) CreateProduct(w http.ResponseWriter, r *http.Request) {
-	if err := r.ParseMultipartForm(10 << 20); err != nil {
-		utils.HandleError(w, err, "❌ Failed to parse multipart form", http.StatusBadRequest)
+	product, ok := r.Context().Value("validatedProduct").(dto.ProductCreate)
+	if !ok {
+		http.Error(w, "Invalid product context", http.StatusInternalServerError)
 		return
 	}
-
-	productJson := r.FormValue("product")
-	var product dto.ProductCreate
-	if err := json.Unmarshal([]byte(productJson), &product); err != nil {
-		utils.HandleError(w, err, "❌ Invalid product JSON", http.StatusBadRequest)
-		return
-	}
-
 	form := r.MultipartForm
 	files := form.File["images"]
 	product.Images = files
@@ -65,13 +57,14 @@ func (h *ProductHandler) CreateProduct(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *ProductHandler) UpdateProduct(w http.ResponseWriter, r *http.Request) {
-	var product dto.ProductUpdate
-	if !utils.DecodeJSONRequest(w, r, &product) {
+	product, ok := r.Context().Value("validatedProduct").(dto.ProductUpdate)
+	if !ok {
+		http.Error(w, "Invalid product context", http.StatusInternalServerError)
 		return
 	}
 
 	if err := h.Service.UpdateProduct(&product); err != nil {
-		utils.HandleError(w, err, "❌ Error updating product_cache", http.StatusBadRequest)
+		utils.HandleError(w, err, "❌ Error updating product", http.StatusBadRequest)
 		return
 	}
 
