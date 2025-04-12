@@ -32,8 +32,10 @@ func main() {
 	handler := handlers.ProductHandler{Service: service}
 
 	r := routes.RegisterRoutes(&handler)
-
 	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
 	fmt.Println("🚀 Сервер запущен на порту", port)
 	log.Fatal(http.ListenAndServe(":"+port, r))
 }
