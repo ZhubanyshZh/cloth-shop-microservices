@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/ZhubanyshZh/go-project-service/internal/cache/product_cache"
 	"github.com/ZhubanyshZh/go-project-service/internal/config/minio"
 	"log"
@@ -36,6 +35,6 @@ func main() {
 	if port == "" {
 		port = "8080"
 	}
-	fmt.Println("🚀 Сервер запущен на порту", port)
+	log.Println("🚀 Server started on: ", port)
 	log.Fatal(http.ListenAndServe(":"+port, r))
 }

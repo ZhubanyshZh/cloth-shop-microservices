@@ -2,7 +2,6 @@ package cache
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"os"
 	"time"
@@ -24,7 +23,7 @@ func InitRedis() {
 	if err != nil {
 		log.Fatal("Failed to connect to Redis:", err)
 	}
-	fmt.Println("✅ Connected to Redis")
+	log.Println("Connected to Redis")
 }
 
 func SetCache(key string, value string, expiration time.Duration) {

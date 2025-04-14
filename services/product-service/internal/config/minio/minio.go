@@ -41,5 +41,5 @@ func InitMinio() {
 	}
 
 	Client = client
-	fmt.Println("MinIO connected.")
+	log.Println("Connected to MinIO")
 }
