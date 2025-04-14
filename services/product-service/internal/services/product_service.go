@@ -8,7 +8,6 @@ import (
 	"github.com/ZhubanyshZh/go-project-service/internal/repositories"
 	"github.com/ZhubanyshZh/go-project-service/internal/repositories/minio"
 	"github.com/jinzhu/copier"
-	"github.com/samber/lo"
 	"log"
 )
 
@@ -32,13 +31,6 @@ func (s *ProductService) GetProducts() ([]dto.GetProduct, error) {
 	getProducts := make([]dto.GetProduct, len(products))
 	for i, product := range products {
 		copier.Copy(&getProducts[i], &product)
-		imageUrls := lo.Map(product.Images, func(img models.Image, _ int) string {
-			return img.URL
-		})
-		fmt.Println(imageUrls)
-		if getProducts[i].Images, err = minio.GetFiles(imageUrls); err != nil {
-			return nil, err
-		}
 	}
 	return getProducts, nil
 }
