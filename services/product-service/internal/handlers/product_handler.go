@@ -2,86 +2,115 @@ package handlers
 
 import (
 	"github.com/ZhubanyshZh/go-project-service/internal/dto"
-	"net/http"
-
 	"github.com/ZhubanyshZh/go-project-service/internal/services"
-	"github.com/ZhubanyshZh/go-project-service/internal/utils"
+	"github.com/gin-gonic/gin"
+	"net/http"
+	"strconv"
 )
 
 type ProductHandler struct {
 	Service *services.ProductService
 }
 
-func (h *ProductHandler) GetProduct(w http.ResponseWriter, r *http.Request) {
-	id, err := utils.GetIDFromRequest(r)
+func (h *ProductHandler) GetProduct(c *gin.Context) {
+	idParam := c.Param("id")
+	id, err := strconv.Atoi(idParam)
 	if err != nil {
-		utils.HandleError(w, err, "❌ Invalid product_cache ID", http.StatusBadRequest)
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "❌ Invalid product ID",
+		})
 		return
 	}
 
 	product, err := h.Service.GetProduct(uint(id))
 	if err != nil {
-		utils.HandleError(w, err, "❌ Product not found", http.StatusNotFound)
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "❌ Product not found",
+			"error":   err.Error(),
+		})
 		return
 	}
 
-	utils.WriteJSON(w, http.StatusOK, product)
+	c.JSON(http.StatusOK, product)
 }
 
-func (h *ProductHandler) GetProducts(w http.ResponseWriter, r *http.Request) {
+func (h *ProductHandler) GetProducts(c *gin.Context) {
 	products, err := h.Service.GetProducts()
 	if err != nil {
-		utils.HandleError(w, err, "❌ Error fetching products", http.StatusInternalServerError)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "❌ Error fetching products",
+			"error":   err.Error(),
+		})
 		return
 	}
-
-	utils.WriteJSON(w, http.StatusOK, products)
+	c.JSON(http.StatusOK, products)
 }
 
-func (h *ProductHandler) CreateProduct(w http.ResponseWriter, r *http.Request) {
-	product, ok := r.Context().Value("validatedProduct").(dto.ProductCreate)
-	if !ok {
-		http.Error(w, "Invalid product context", http.StatusInternalServerError)
+func (h *ProductHandler) CreateProduct(c *gin.Context) {
+	productAny, exists := c.Get("validatedProduct")
+	if !exists {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "❌ Invalid product context",
+		})
 		return
 	}
-	form := r.MultipartForm
-	files := form.File["images"]
-	product.Images = files
+	product := productAny.(dto.ProductCreate)
+
+	form, err := c.MultipartForm()
+	if err == nil {
+		files := form.File["images"]
+		product.Images = files
+	}
 
 	if err := h.Service.CreateProduct(&product); err != nil {
-		utils.HandleError(w, err, "❌ Error creating product", http.StatusInternalServerError)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "❌ Error creating product",
+			"error":   err.Error(),
+		})
 		return
 	}
 
-	utils.WriteJSON(w, http.StatusCreated, product)
+	c.JSON(http.StatusCreated, product)
 }
 
-func (h *ProductHandler) UpdateProduct(w http.ResponseWriter, r *http.Request) {
-	product, ok := r.Context().Value("validatedProduct").(dto.ProductUpdate)
-	if !ok {
-		http.Error(w, "Invalid product context", http.StatusInternalServerError)
+func (h *ProductHandler) UpdateProduct(c *gin.Context) {
+	productAny, exists := c.Get("validatedProduct")
+	if !exists {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "❌ Invalid product context",
+		})
 		return
 	}
+	product := productAny.(dto.ProductUpdate)
 
 	if err := h.Service.UpdateProduct(&product); err != nil {
-		utils.HandleError(w, err, "❌ Error updating product", http.StatusBadRequest)
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "❌ Error updating product",
+			"error":   err.Error(),
+		})
 		return
 	}
 
-	utils.WriteJSON(w, http.StatusOK, product)
+	c.JSON(http.StatusOK, product)
 }
 
-func (h *ProductHandler) DeleteProduct(w http.ResponseWriter, r *http.Request) {
-	id, err := utils.GetIDFromRequest(r)
+func (h *ProductHandler) DeleteProduct(c *gin.Context) {
+	idParam := c.Param("id")
+	id, err := strconv.Atoi(idParam)
 	if err != nil {
-		utils.HandleError(w, err, "❌ Invalid product_cache ID", http.StatusBadRequest)
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "❌ Invalid product ID",
+		})
 		return
 	}
 
 	if err := h.Service.DeleteProduct(uint(id)); err != nil {
-		utils.HandleError(w, err, "❌ Product not found", http.StatusNotFound)
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "❌ Product not found",
+			"error":   err.Error(),
+		})
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
+	c.Status(http.StatusOK)
 }

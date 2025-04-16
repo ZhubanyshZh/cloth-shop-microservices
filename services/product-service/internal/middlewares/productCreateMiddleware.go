@@ -1,33 +1,45 @@
 package middlewares
 
 import (
-	"context"
 	"encoding/json"
 	"github.com/ZhubanyshZh/go-project-service/internal/dto"
 	"github.com/ZhubanyshZh/go-project-service/internal/utils"
+	"github.com/gin-gonic/gin"
 	"net/http"
 )
 
-func ProductCreateMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if err := r.ParseMultipartForm(10 << 20); err != nil {
-			utils.HandleError(w, err, "❌ Failed to parse multipart form", http.StatusBadRequest)
+func ProductCreateMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		if err := c.Request.ParseMultipartForm(10 << 20); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": "❌ Failed to parse multipart form",
+				"error":   err.Error(),
+			})
+			c.Abort()
 			return
 		}
 
-		productJson := r.FormValue("product")
+		productJson := c.Request.FormValue("product")
 		var product dto.ProductCreate
 		if err := json.Unmarshal([]byte(productJson), &product); err != nil {
-			utils.HandleError(w, err, "❌ Invalid product JSON", http.StatusBadRequest)
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": "❌ Invalid product JSON",
+				"error":   err.Error(),
+			})
+			c.Abort()
 			return
 		}
 
 		if err := utils.ValidateStruct(product); err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": "❌ Validation failed",
+				"error":   err.Error(),
+			})
+			c.Abort()
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), "validatedProduct", product)
-		next.ServeHTTP(w, r.WithContext(ctx))
-	})
+		c.Set("validatedProduct", product)
+		c.Next()
+	}
 }

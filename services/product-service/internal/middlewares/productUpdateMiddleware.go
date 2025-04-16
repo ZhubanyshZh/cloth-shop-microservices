@@ -1,25 +1,24 @@
 package middlewares
 
 import (
-	"context"
 	"github.com/ZhubanyshZh/go-project-service/internal/dto"
 	"github.com/ZhubanyshZh/go-project-service/internal/utils"
+	"github.com/gin-gonic/gin"
 	"net/http"
 )
 
-func ProductUpdateMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+func ProductUpdateMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
 		var product dto.ProductUpdate
-		if !utils.DecodeJSONRequest(w, r, &product) {
+		if !utils.DecodeJSONRequest(c.Writer, c.Request, &product) {
 			return
 		}
 
 		if err := utils.ValidateStruct(product); err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-
-		ctx := context.WithValue(r.Context(), "validatedProduct", product)
-		next.ServeHTTP(w, r.WithContext(ctx))
-	})
+		c.Set("validatedProduct", product)
+		c.Next()
+	}
 }
