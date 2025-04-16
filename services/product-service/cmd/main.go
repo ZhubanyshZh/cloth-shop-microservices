@@ -4,7 +4,6 @@ import (
 	"github.com/ZhubanyshZh/go-project-service/internal/cache/product_cache"
 	"github.com/ZhubanyshZh/go-project-service/internal/config/minio"
 	"log"
-	"net/http"
 	"os"
 
 	"github.com/ZhubanyshZh/go-project-service/internal/cache"
@@ -36,5 +35,5 @@ func main() {
 		port = "8080"
 	}
 	log.Println("🚀 Server started on: ", port)
-	log.Fatal(http.ListenAndServe(":"+port, r))
+	log.Fatal(r.Run(":" + port))
 }
