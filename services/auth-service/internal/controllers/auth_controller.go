@@ -1,43 +1,55 @@
 package controllers
 
 import (
-	"github.com/ZhubanyshZh/cloth-shop-microservices/internal/models"
-	"github.com/ZhubanyshZh/cloth-shop-microservices/internal/utils"
-	"net/http"
-
+	"github.com/ZhubanyshZh/cloth-shop-microservices/internal/dtos"
+	"github.com/ZhubanyshZh/cloth-shop-microservices/internal/services"
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
+	"net/http"
 )
 
-type RegisterInput struct {
-	Email    string `json:"email" binding:"required,email"`
-	Password string `json:"password" binding:"required,min=6"`
-	Name     string `json:"name"`
+type AuthController struct {
+	Service *services.AuthService
 }
 
-func Register(db *gorm.DB) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		var input RegisterInput
-		if err := c.ShouldBindJSON(&input); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
+func NewAuthController(service services.AuthService) *AuthController {
+	return &AuthController{Service: &service}
+}
 
-		hashedPassword, _ := utils.HashPassword(input.Password)
-
-		user := models.User{
-			Email:        input.Email,
-			PasswordHash: hashedPassword,
-			Name:         input.Name,
-			Role:         models.RoleUser,
-		}
-
-		if err := db.Create(&user).Error; err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "User creation failed"})
-			return
-		}
-
-		access, refresh, _ := utils.GenerateTokens(user.Email)
-		c.JSON(http.StatusCreated, gin.H{"access": access, "refresh": refresh})
+func (c *AuthController) Register(ctx *gin.Context) {
+	userRegisterReqAny, exists := ctx.Get("validatedUserReq")
+	if !exists {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"message": "❌ Invalid register req",
+		})
+		return
 	}
+	userRegisterReq := userRegisterReqAny.(dtos.AuthReq)
+	user, err := c.Service.Register(userRegisterReq.Email, userRegisterReq.Password)
+	if err != nil {
+		ctx.JSON(http.StatusConflict, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx.JSON(http.StatusCreated, gin.H{"user": user})
+}
+
+func (c *AuthController) Login(ctx *gin.Context) {
+	userLoginReqAny, exists := ctx.Get("validatedUserReq")
+	if !exists {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"message": "❌ Invalid login req",
+		})
+		return
+	}
+	userLoginReq := userLoginReqAny.(dtos.AuthReq)
+	access, refresh, err := c.Service.Login(userLoginReq.Email, userLoginReq.Password)
+	if err != nil {
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"access_token":  access,
+		"refresh_token": refresh,
+	})
 }

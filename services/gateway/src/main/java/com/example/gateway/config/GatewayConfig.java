@@ -17,6 +17,8 @@ public class GatewayConfig {
 //                                .filter(rateLimitFilter)
 //                        )
                         .uri("http://localhost:8080"))
+                .route("auth-service", r -> r.path("/api/v1/auth/**")
+                        .uri("http://localhost:8081"))
                 .build();
     }
 }

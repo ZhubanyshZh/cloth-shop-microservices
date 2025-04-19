@@ -1,28 +1,29 @@
 package utils
 
 import (
-	"os"
-	"time"
-
 	"github.com/golang-jwt/jwt/v5"
+	"time"
 )
 
-func GenerateTokens(email string) (string, string, error) {
-	accessToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"email": email,
-		"exp":   time.Now().Add(time.Minute * 15).Unix(),
-	})
+var accessSecret = []byte("ACCESS_SECRET")
+var refreshSecret = []byte("REFRESH_SECRET")
 
-	refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"email": email,
-		"exp":   time.Now().Add(time.Hour * 24 * 7).Unix(),
-	})
-
-	access, err := accessToken.SignedString([]byte(os.Getenv("JWT_SECRET")))
-	if err != nil {
-		return "", "", err
+func GenerateAccessToken(userID string) (string, error) {
+	claims := jwt.MapClaims{
+		"user_id": userID,
+		"exp":     time.Now().Add(15 * time.Minute).Unix(),
 	}
 
-	refresh, err := refreshToken.SignedString([]byte(os.Getenv("JWT_REFRESH_SECRET")))
-	return access, refresh, err
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	return token.SignedString(accessSecret)
+}
+
+func GenerateRefreshToken(userID string) (string, error) {
+	claims := jwt.MapClaims{
+		"user_id": userID,
+		"exp":     time.Now().Add(7 * 24 * time.Hour).Unix(),
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	return token.SignedString(refreshSecret)
 }

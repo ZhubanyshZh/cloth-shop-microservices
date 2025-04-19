@@ -28,6 +28,7 @@ func RegisterRoutes(handler *handlers.ProductHandler) *gin.Engine {
 
 	product := r.Group(baseURL)
 	{
+		product.Use(middlewares.AuthMiddleware())
 		product.GET("", handler.GetProducts)
 		product.GET("/:id", handler.GetProduct)
 		product.DELETE("/:id", handler.DeleteProduct)
