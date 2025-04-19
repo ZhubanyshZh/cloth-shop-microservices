@@ -31,10 +31,10 @@ func RegisterRoutes(handler *handlers.ProductHandler) *gin.Engine {
 		product.Use(middlewares.AuthMiddleware())
 		product.GET("", handler.GetProducts)
 		product.GET("/:id", handler.GetProduct)
-		product.DELETE("/:id", handler.DeleteProduct)
+		product.DELETE("/:id", middlewares.AdminMiddleware(), handler.DeleteProduct)
 
-		product.POST("", middlewares.ProductCreateMiddleware(), handler.CreateProduct)
-		product.PUT("", middlewares.ProductUpdateMiddleware(), handler.UpdateProduct)
+		product.POST("", middlewares.ProductCreateMiddleware(), middlewares.AdminMiddleware(), handler.CreateProduct)
+		product.PUT("", middlewares.ProductUpdateMiddleware(), middlewares.AdminMiddleware(), handler.UpdateProduct)
 	}
 
 	return r

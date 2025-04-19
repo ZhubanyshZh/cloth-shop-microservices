@@ -34,8 +34,8 @@ func (s *AuthService) Login(email, password string) (access string, refresh stri
 		return "", "", errors.New("invalid credentials")
 	}
 
-	accessToken, _ := utils.GenerateAccessToken(user.ID.String())
-	refreshToken, _ := utils.GenerateRefreshToken(user.ID.String())
+	accessToken, _ := utils.GenerateAccessToken(user)
+	refreshToken, _ := utils.GenerateRefreshToken(user)
 
 	err = s.Repo.SaveRefreshToken(user.ID, refreshToken)
 	if err != nil {
