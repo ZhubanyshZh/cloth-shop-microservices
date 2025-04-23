@@ -5,27 +5,23 @@ import (
 	"github.com/ZhubanyshZh/cloth-shop-microservices/internal/models"
 	"github.com/ZhubanyshZh/cloth-shop-microservices/internal/repositories"
 	"github.com/ZhubanyshZh/cloth-shop-microservices/internal/utils"
+	"github.com/google/uuid"
+	"gorm.io/gorm"
+	"log"
+	"time"
 )
 
-type AuthService struct {
-	Repo repositories.UserRepository
-}
-
-func NewAuthService(repo repositories.UserRepository) *AuthService {
-	return &AuthService{Repo: repo}
-}
-
-func (s *AuthService) Register(email, password string) (*models.User, error) {
-	_, err := s.Repo.FindByEmail(email)
+func Register(email, password string) (*models.User, error) {
+	_, err := repositories.FindByEmail(email)
 	if err == nil {
 		return nil, errors.New("user already exists")
 	}
 	hashed, _ := utils.HashPassword(password)
-	return s.Repo.CreateUser(email, hashed)
+	return repositories.CreateUser(email, hashed)
 }
 
-func (s *AuthService) Login(email, password string) (access string, refresh string, err error) {
-	user, err := s.Repo.FindByEmail(email)
+func Login(email, password string) (access string, refresh string, err error) {
+	user, err := repositories.FindByEmail(email)
 	if err != nil {
 		return "", "", errors.New("invalid credentials")
 	}
@@ -34,17 +30,34 @@ func (s *AuthService) Login(email, password string) (access string, refresh stri
 		return "", "", errors.New("invalid credentials")
 	}
 
-	accessToken, _ := utils.GenerateAccessToken(user)
-	refreshToken, _ := utils.GenerateRefreshToken(user)
+	accessToken, _ := utils.GenerateAccessToken(user.ID.String(), string(user.Role))
+	refreshToken, _ := utils.GenerateRefreshToken(user.ID.String())
 
-	err = s.Repo.SaveRefreshToken(user.ID, refreshToken)
+	err = repositories.SaveRefreshToken(user.ID, refreshToken)
 	if err != nil {
 		return "", "", err
 	}
-
+	log.Println("access token:", accessToken, "refresh token:", refreshToken)
 	return accessToken, refreshToken, nil
 }
 
-func (s *AuthService) Logout(refreshToken string) error {
-	return s.Repo.DeleteRefreshToken(refreshToken)
+func Logout(refreshToken string) error {
+	return repositories.DeleteRefreshToken(refreshToken)
+}
+
+func FindOrCreateFromGoogle(googleUser *models.User) (*models.User, error) {
+	user, err := repositories.FindByEmail(googleUser.Email)
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		user = &models.User{
+			ID:              uuid.New(),
+			Email:           googleUser.Email,
+			Name:            googleUser.Name,
+			Role:            "User",
+			IsEmailVerified: true,
+			CreatedAt:       time.Now(),
+			UpdatedAt:       time.Now(),
+		}
+		err = repositories.SaveUser(user)
+	}
+	return user, err
 }
