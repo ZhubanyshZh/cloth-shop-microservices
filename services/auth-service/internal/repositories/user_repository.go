@@ -1,45 +1,29 @@
 package repositories
 
 import (
+	"github.com/ZhubanyshZh/cloth-shop-microservices/internal/config/db"
 	"github.com/ZhubanyshZh/cloth-shop-microservices/internal/models"
-	"github.com/google/uuid"
-	"gorm.io/gorm"
-	"time"
 )
 
-type UserRepository struct {
-	DB *gorm.DB
-}
-
-func NewImageRepository(db *gorm.DB) *UserRepository {
-	return &UserRepository{DB: db}
-}
-
-func (r *UserRepository) CreateUser(email, password string) (*models.User, error) {
+func CreateUser(email, password string) (*models.User, error) {
 	user := &models.User{Email: email, PasswordHash: password, Role: models.RoleUser}
-	if err := r.DB.Create(user).Error; err != nil {
+	if err := db.DB.Create(user).Error; err != nil {
 		return nil, err
 	}
 	return user, nil
 }
 
-func (r *UserRepository) FindByEmail(email string) (*models.User, error) {
+func FindByEmail(email string) (*models.User, error) {
 	var user models.User
-	if err := r.DB.Where("email = ?", email).First(&user).Error; err != nil {
+	if err := db.DB.Where("email = ?", email).First(&user).Error; err != nil {
 		return nil, err
 	}
 	return &user, nil
 }
 
-func (r *UserRepository) SaveRefreshToken(userID uuid.UUID, token string) error {
-	rt := models.RefreshToken{
-		UserID:    userID,
-		Token:     token,
-		ExpiresAt: time.Now().Add(7 * 24 * time.Hour),
+func SaveUser(user *models.User) error {
+	if err := db.DB.Save(user).Error; err != nil {
+		return err
 	}
-	return r.DB.Create(&rt).Error
-}
-
-func (r *UserRepository) DeleteRefreshToken(token string) error {
-	return r.DB.Where("token = ?", token).Delete(&models.RefreshToken{}).Error
+	return nil
 }

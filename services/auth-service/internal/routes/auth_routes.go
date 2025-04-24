@@ -8,7 +8,7 @@ import (
 	"os"
 )
 
-func SetupAuthRoutes(controller controllers.AuthController) *gin.Engine {
+func SetupAuthRoutes() *gin.Engine {
 	apiVersion := os.Getenv("API_VERSION")
 	baseURL := fmt.Sprintf("/api/%s/auth", apiVersion)
 
@@ -16,8 +16,14 @@ func SetupAuthRoutes(controller controllers.AuthController) *gin.Engine {
 
 	authRoute := r.Group(baseURL)
 	{
-		authRoute.POST("/register", middlewares.AuthReqMiddleware(), controller.Register)
-		authRoute.POST("/login", middlewares.AuthReqMiddleware(), controller.Login)
+		authRoute.POST("/register", middlewares.AuthReqMiddleware(), controllers.Register)
+		authRoute.POST("/login", middlewares.AuthReqMiddleware(), controllers.Login)
+		authRoute.GET("/refresh-token", controllers.HandleRefreshToken)
+	}
+	oauthGoogleRoute := r.Group(baseURL + "/oauth/google")
+	{
+		oauthGoogleRoute.GET("/", controllers.GoogleLogin)
+		oauthGoogleRoute.GET("/callback", controllers.GoogleCallback)
 	}
 
 	return r
