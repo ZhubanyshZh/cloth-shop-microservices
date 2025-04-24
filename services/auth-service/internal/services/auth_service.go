@@ -2,6 +2,8 @@ package services
 
 import (
 	"errors"
+	"github.com/ZhubanyshZh/cloth-shop-microservices/internal/dtos"
+	"github.com/ZhubanyshZh/cloth-shop-microservices/internal/mapper"
 	"github.com/ZhubanyshZh/cloth-shop-microservices/internal/models"
 	"github.com/ZhubanyshZh/cloth-shop-microservices/internal/repositories"
 	"github.com/ZhubanyshZh/cloth-shop-microservices/internal/utils"
@@ -60,4 +62,12 @@ func FindOrCreateFromGoogle(googleUser *models.User) (*models.User, error) {
 		err = repositories.SaveUser(user)
 	}
 	return user, err
+}
+
+func GetUser(id uuid.UUID) (*dtos.MeResponse, error) {
+	user, err := repositories.FindByID(id)
+	if err != nil {
+		return nil, err
+	}
+	return mapper.ToMeResponse(user), nil
 }

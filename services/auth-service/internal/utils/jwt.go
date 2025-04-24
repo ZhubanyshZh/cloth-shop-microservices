@@ -58,6 +58,26 @@ func ValidateRefreshToken(tokenStr string) (*TokenClaims, error) {
 	return claims, nil
 }
 
+func ValidateAccessToken(tokenStr string) (*TokenClaims, error) {
+	token, err := jwt.ParseWithClaims(tokenStr, &TokenClaims{}, func(token *jwt.Token) (interface{}, error) {
+		return getAccessSecret(), nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	claims, ok := token.Claims.(*TokenClaims)
+	if !ok || !token.Valid {
+		return nil, errors.New("invalid token")
+	}
+
+	if claims.ExpiresAt.Time.Before(time.Now()) {
+		return nil, errors.New("token expired")
+	}
+
+	return claims, nil
+}
+
 func getAccessSecret() []byte {
 	return []byte(os.Getenv("JWT_SECRET"))
 }

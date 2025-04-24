@@ -44,10 +44,8 @@ func Login(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{
-		"access_token":  access,
-		"refresh_token": refresh,
-	})
+	setAuthCookies(ctx, access, refresh)
+	ctx.JSON(http.StatusOK, gin.H{"success": true})
 }
 
 func GoogleLogin(ctx *gin.Context) {

@@ -3,6 +3,7 @@ package repositories
 import (
 	"github.com/ZhubanyshZh/cloth-shop-microservices/internal/config/db"
 	"github.com/ZhubanyshZh/cloth-shop-microservices/internal/models"
+	"github.com/google/uuid"
 )
 
 func CreateUser(email, password string) (*models.User, error) {
@@ -26,4 +27,12 @@ func SaveUser(user *models.User) error {
 		return err
 	}
 	return nil
+}
+
+func FindByID(id uuid.UUID) (*models.User, error) {
+	var user models.User
+	if err := db.DB.Where("id = ?", id).First(&user).Error; err != nil {
+		return nil, err
+	}
+	return &user, nil
 }

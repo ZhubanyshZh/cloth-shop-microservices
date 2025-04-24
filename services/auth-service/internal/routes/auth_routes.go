@@ -25,6 +25,10 @@ func SetupAuthRoutes() *gin.Engine {
 		oauthGoogleRoute.GET("/", controllers.GoogleLogin)
 		oauthGoogleRoute.GET("/callback", controllers.GoogleCallback)
 	}
+	userRoutes := r.Group(baseURL + "/users")
+	{
+		userRoutes.GET("/me", controllers.GetMe)
+	}
 
 	return r
 }
