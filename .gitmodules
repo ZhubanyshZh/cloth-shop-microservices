@@ -1,3 +1,6 @@
 [submodule "gateway"]
 	path = gateway
 	url = https://github.com/ZhubanyshZh/spring-cloud-gateway
+[submodule "api-gateway"]
+	path = api-gateway
+	url = https://github.com/ZhubanyshZh/cloth-shop-microservices
