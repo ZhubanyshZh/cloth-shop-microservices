@@ -2,6 +2,10 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/services/spring-cloud-gateway" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/auth-service" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/gateway" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/services" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/services/gateway" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/services/gateway/api-gateway" vcs="Git" />
   </component>
 </project>
