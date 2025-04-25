@@ -5,11 +5,6 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f4d5dd04-25e5-4089-8107-8da9424349c6" name="Changes" comment="auth-service init">
-      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/cloth-shop-microservices.iml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/docker-compose.yml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/services/auth-service/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/services/auth-service/go.mod" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/services/auth-service/go.sum" beforeDir="false" afterPath="$PROJECT_DIR$/services/auth-service/go.sum" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/services/auth-service/internal/controllers/auth_controller.go" beforeDir="false" afterPath="$PROJECT_DIR$/services/auth-service/internal/controllers/auth_controller.go" afterDir="false" />
@@ -107,6 +102,7 @@
       <workItem from="1745554779725" duration="665000" />
       <workItem from="1745556561090" duration="25000" />
       <workItem from="1745556590770" duration="23000" />
+      <workItem from="1745556959983" duration="325000" />
     </task>
     <servers />
   </component>

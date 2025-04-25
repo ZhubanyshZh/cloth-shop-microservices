@@ -2,6 +2,6 @@
 	path = auth-service
 	url = https://github.com/ClothShop/auth-service.git
 
-[submodule "api-gateway"]
-	path = api-gateway
+[submodule "gateway"]
+	path = gateway
 	url = https://github.com/ClothShop/api-gateway.git
