@@ -1,7 +1,9 @@
 [submodule "auth-service"]
 	path = auth-service
 	url = https://github.com/ClothShop/auth-service.git
+	branch = master
 
 [submodule "gateway"]
 	path = gateway
 	url = https://github.com/ClothShop/api-gateway.git
+	branch = master
