@@ -19,11 +19,16 @@ func SetupAuthRoutes() *gin.Engine {
 		authRoute.POST("/register", middlewares.AuthReqMiddleware(), controllers.Register)
 		authRoute.POST("/login", middlewares.AuthReqMiddleware(), controllers.Login)
 		authRoute.GET("/refresh-token", controllers.HandleRefreshToken)
+		authRoute.POST("/logout", controllers.Logout)
 	}
 	oauthGoogleRoute := r.Group(baseURL + "/oauth/google")
 	{
 		oauthGoogleRoute.GET("/", controllers.GoogleLogin)
 		oauthGoogleRoute.GET("/callback", controllers.GoogleCallback)
+	}
+	userRoutes := r.Group(baseURL + "/users")
+	{
+		userRoutes.GET("/me", controllers.GetMe)
 	}
 
 	return r

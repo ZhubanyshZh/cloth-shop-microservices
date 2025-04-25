@@ -44,10 +44,8 @@ func Login(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{
-		"access_token":  access,
-		"refresh_token": refresh,
-	})
+	setAuthCookies(ctx, access, refresh)
+	ctx.JSON(http.StatusOK, gin.H{"success": true})
 }
 
 func GoogleLogin(ctx *gin.Context) {
@@ -100,7 +98,7 @@ func GoogleCallback(c *gin.Context) {
 	}
 
 	setAuthCookies(c, accessToken, refreshToken)
-	c.Redirect(http.StatusFound, "http://localhost:3000")
+	c.Redirect(http.StatusFound, "http://localhost:3000/login")
 }
 
 func HandleRefreshToken(c *gin.Context) {
@@ -135,4 +133,12 @@ func HandleRefreshToken(c *gin.Context) {
 func setAuthCookies(c *gin.Context, access, refresh string) {
 	c.SetCookie("access_token", access, 3600, "/", "localhost", false, true)
 	c.SetCookie("refresh_token", refresh, 7*24*3600, "/", "localhost", false, true)
+}
+
+func Logout(c *gin.Context) {
+	token, _ := c.Cookie("access_token")
+	go services.Logout(token)
+	c.SetCookie("access_token", "", -1, "/", "localhost", false, true)
+	c.SetCookie("refresh_token", "", -1, "/", "localhost", false, true)
+	c.JSON(http.StatusOK, gin.H{"success": true})
 }
