@@ -1,0 +1,6 @@
+[submodule "api-gateway"]
+	path = api-gateway
+	url = https://github.com/ZhubanyshZh/spring-cloud-gateway
+[submodule "auth-service"]
+	path = auth-service
+	url = https://github.com/ClothShop/auth-service.git

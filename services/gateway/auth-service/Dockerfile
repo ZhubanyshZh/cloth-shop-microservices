@@ -3,7 +3,7 @@ FROM golang:1.23.5 AS builder
 WORKDIR /app
 COPY go.mod go.sum ./
 RUN go mod download
-COPY . .
+COPY ../services/auth-service .
 RUN go build -o main ./cmd/main.go
 
 FROM ubuntu:22.04
