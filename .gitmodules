@@ -7,3 +7,6 @@
 	path = gateway
 	url = https://github.com/ClothShop/api-gateway.git
 	branch = master
+[submodule "product-service"]
+	path = product-service
+	url = https://github.com/ClothShop/product-service.git
